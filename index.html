@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <script src="tailwindcss335.js"></script>
+    <script src="alpine.js" defer></script> 
+    
+     
+    <link rel="stylesheet" type="text/css" href="webfonts/ywft-hannah-wide.css">
+    <link rel="stylesheet" type="text/css" href="webfonts/ywft-hannah-regular.css">
+    <link rel="stylesheet" type="text/css" href="webfonts/ywft-hannah-narrow.css">
+    <link rel="stylesheet" type="text/css" href="bujo.css">
+   
+
+ 
+</head>
+<body class="bujo-bg" x-data="habitTracker" x-init="initAlpine">
+    <div class="container mx-auto p-4">
+        <div class=" p-6 rounded-lg   bujo-bg">
+            <div class="flex justify-between mb-4 baseline">
+                <button  @click="prevMonth()" class="nav"><span class="highlight">Prev</span></button>
+                <h2 x-text="getMonthName() + ' ' + currentYear" class="font-bold bujo-text"></h2>
+                <button  @click="nextMonth()" class="nav"><span class="highlight">Next</span></button>
+            </div>
+            <div class="flex justify-between mb-4">
+               
+              
+                <div>
+                    <button class="bujo-btn" @click="addRow()">Add Row</button>
+                    <button class="bujo-btn" @click="addRow(true)">Add Category</button>
+           
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full  bujo-table">
+                    <thead>
+                        <tr>
+                            <th class="bujo-text">&nbsp;</th>
+                            <template x-for="day in daysInMonth" :key="day">
+                                <th class="bujo-text" x-text="day" :class="{ 'font-bold': isWeekend(day), 'bg-gray-200': isWeekend(day) }"></th>
+                            </template>
+                            <th class="bujo-text">&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        <template x-for="row in getCurrentMonthRows()" :key="row.id">
+                            <tr :class="{'bg-gray-200 category-row': row.isCategory}" draggable="true" @dragstart="dragStart(row)" @dragover="dragOver" @drop="drop(row)" class="draggable">
+                                <td>
+                                    <input type="text" class="border-none bujo-input-cat" x-model="row.name">
+                                </td>
+                                <template x-if="!row.isCategory">
+                                    <template x-for="day in daysInMonth" :key="day">
+                                        <td class="" :class="{ 'font-bold': isWeekend(day) }">
+                                            <input type="checkbox" class="checkbox p2" :checked="isHabitChecked(row, day)" @click="toggleHabit(row, day)">
+                                        </td>
+                                    </template>
+                                </template>
+                                <template x-if="row.isCategory && row.name === 'Mood'">
+                                    <template x-for="day in daysInMonth" :key="day">
+                                        <td class="">
+                                            <select class="emoji-select bujo-input" x-model="row.emoji[day]">
+                                                <option value="">🫥</option>
+                                                <option value="😊">😊</option>
+                                                <option value="😢">😢</option>
+                                                <option value="😠">😠</option>
+                                                <option value="😐">😐</option>
+                                                <option value="😡">😡</option>
+                                                <option value="🤩">🤩</option>
+                                                <option value="🤢">🤢</option>
+                                            </select>
+                                        </td>
+                                    </template>
+                                </template>
+                              
+                                <td class="py-3 px-4">
+                                    <button class="text-red-500" @click="removeRow(row.id)">
+                                       ⊖
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                
+            </div>
+           
+        </div>
+        <div class="flex mb-4 p-6">
+            <button class="bujo-btn orange-highlighter" @click="saveState()">Save</button>
+            <button class="bujo-btn orange-highlighter" @click="exportData()">Export Data</button>
+
+            <input class="bujo-btn orange-highlighter" type="file" accept=".json" @change="importData">
+        </div>
+    </div>
+    <script src="bujo.js"></script>
+     
+</body>
+</html>
+

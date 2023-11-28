@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Habit Tracker</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles.css">
+
+  <script>
+    // Habit data object
+    const habitData = {
+      rows: []
+    };
+
+    // Load data from localStorage 
+    loadData();
+
+    // Current date
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+
+    // DOM Elements
+    const prevButton = document.getElementById('prev');
+    const nextButton = document.getElementById('next');
+    const titleElement = document.getElementById('title');  
+    const table = document.getElementById('table');
+    const rowsElement = document.getElementById('rows');
+
+    // Render UI
+    render();
+
+    function render() {
+      titleElement.textContent = `${getMonthName(currentMonth)} ${currentYear}`;  
+
+      let html = '';
+
+      habitData.rows.forEach(row => {
+        html += createRowHTML(row);
+      });
+
+      rowsElement.innerHTML = html;
+    }
+
+    function createRowHTML(row) {
+      let html = `
+        <tr data-row-id="${row.id}">
+          <td>${row.name}</td>
+      `;
+
+      for (let i = 1; i <= getDaysInMonth(); i++) { 
+        let checked = '';
+        if (row.dates.includes(i)) {
+          checked = 'checked';
+        }
+
+        html += `
+          <td>
+            <input type="checkbox" ${checked} 
+              onclick="toggleDate(${row.id}, ${i})">
+          </td>
+        `;
+      }
+
+      html += `
+          <td>
+            <button onclick="removeRow(${row.id})">
+              Delete
+            </button>  
+          </td>  
+        </tr>
+      `;
+
+      return html;
+    }
+
+    // Add row
+    function addRow() {
+      habitData.rows.push({
+        id: Date.now(),  
+        name: '',
+        dates: [] 
+      });
+
+      saveData();
+      render();
+    }
+
+    // Toggle date
+    function toggleDate(rowId, date) {
+      const row = habitData.rows.find(r => r.id == rowId); 
+      toggleDateForRow(row, date);
+
+      saveData();
+      render();  
+    }
+
+    // Save to localStorage
+    function saveData() {
+      localStorage.setItem('habitData', JSON.stringify(habitData));
+    }
+
+    // Load data from localStorage
+    function loadData() {
+      const data = localStorage.getItem('habitData');
+      if (data) {
+        habitData.rows = JSON.parse(data).rows;  
+      }
+    }
+
+    // Other helper functions
+    function getDaysInMonth() {
+      // Return number of days in month
+    }
+
+    function getMonthName(monthIndex) {
+      // Return name of month 
+    }
+
+    function isWeekend(day) {
+
+    }
+
+  </script>
+
+</head>
+
+<body>
+
+  <!-- User interface -->
+  <div id="title"></div>
+
+  <table id="table">
+    <tbody id="rows"></tbody>
+  </table>
+
+  <button onclick="addRow()">Add Row</button>
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>

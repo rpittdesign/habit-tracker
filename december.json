@@ -1,0 +1,100 @@
+{
+  "currentYear": 2023,
+  "currentMonth": 11,
+  "rows": [
+    {
+      "id": 7,
+      "name": "Meditation",
+      "checkedDays": [
+        1
+      ],
+      "isCategory": false,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 1,
+      "name": "10,000 Steps",
+      "checkedDays": [],
+      "isCategory": false,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 8,
+      "name": "Qi Gong",
+      "checkedDays": [
+        1
+      ],
+      "isCategory": false,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 9,
+      "name": "Drawing",
+      "checkedDays": [
+        1
+      ],
+      "isCategory": false,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 10,
+      "name": "Writing",
+      "checkedDays": [],
+      "isCategory": false,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 11,
+      "name": "Sleeping",
+      "checkedDays": [],
+      "isCategory": false,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 12,
+      "name": "Miscellaneous",
+      "checkedDays": [],
+      "isCategory": true,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 17,
+      "name": "play video games",
+      "checkedDays": [],
+      "isCategory": false,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 13,
+      "name": "Eat less than 30g sugar",
+      "checkedDays": [],
+      "isCategory": false,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 14,
+      "name": "Mood",
+      "checkedDays": [],
+      "isCategory": true,
+      "category": null,
+      "emoji": null
+    },
+    {
+      "id": 15,
+      "name": "Weather",
+      "checkedDays": [],
+      "isCategory": true,
+      "category": null,
+      "emoji": null
+    }
+  ]
+}

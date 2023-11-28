@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('habitData', {
+                monthlyRows: {},
+                load() {
+                    let data = JSON.parse(localStorage.getItem('habitData')) || {};
+                    this.monthlyRows = data.monthlyRows || {};
+                },
+                save() {
+                    localStorage.setItem('habitData', JSON.stringify({
+                        monthlyRows: this.monthlyRows
+                    }));
+                },
+                getRowsForMonth(year, month) {
+                    const key = `${year}-${month}`;
+                    return this.monthlyRows[key] || [];
+                },
+                setRowsForMonth(year, month, rows) {
+                    const key = `${year}-${month}`;
+                    this.monthlyRows[key] = rows;
+                    this.save();
+                },
+            });
+
+            Alpine.data('habitTracker', () => ({
+                nextId: 1,
+                daysInMonth: [],
+                currentMonth: new Date().getMonth(),
+                currentYear: new Date().getFullYear(),
+                draggedRow: null,
+                init() {
+                    this.calculateDaysInMonth();
+                    Alpine.store('habitData').load();
+                    if (!Alpine.store('habitData').getRowsForMonth(this.currentYear, this.currentMonth).length) {
+                        this.addRow(true, 'Good Habits');
+                        this.addRow(false, 'Read', 'Good Habits');
+                        this.addRow(false, 'Workout', 'Good Habits');
+                        this.addRow(true, 'Bad Habits');
+                        this.addRow(false, 'Smoking', 'Bad Habits');
+                        this.addRow(true, 'Mood');
+                    }
+                },
+                calculateDaysInMonth() {
+                    this.daysInMonth = Array.from({ length: new Date(this.currentYear, this.currentMonth + 1, 0).getDate() }, (_, i) => i + 1);
+                },
+                addRow(isCategory = false, name = '', category = null) {
+                    const rows = this.getCurrentMonthRows();
+                    const newRow = { 
+                        id: this.nextId++, 
+                        name, 
+                        checkedDays: [], 
+                        isCategory, 
+                        category, 
+                        emoji: isCategory && name === 'Mood' ? Object.fromEntries(this.daysInMonth.map(day => [day, ''])) : null 
+                    };
+                    rows.push(newRow);
+                    this.saveCurrentMonthRows(rows);
+                },
+                toggleHabit(row, day) {
+                    if (row.checkedDays.includes(day)) {
+                        row.checkedDays = row.checkedDays.filter(d => d !== day);
+                    } else {
+                        row.checkedDays.push(day);
+                    }
+                    this.saveCurrentMonthRows(this.getCurrentMonthRows());
+                },
+                isHabitChecked(row, day) {
+                    return row.checkedDays.includes(day);
+                },
+                removeRow(id) {
+                    const rows = this.getCurrentMonthRows().filter(row => row.id !== id);
+                    this.saveCurrentMonthRows(rows);
+                },
+                prevMonth() {
+                    if (this.currentMonth === 0) {
+                        this.currentMonth = 11;
+                        this.currentYear--;
+                    } else {
+                        this.currentMonth--;
+                    }
+                    this.calculateDaysInMonth();
+                },
+                nextMonth() {
+                    if (this.currentMonth === 11) {
+                        this.currentMonth = 0;
+                        this.currentYear++;
+                    } else {
+                        this.currentMonth++;
+                    }
+                    this.calculateDaysInMonth();
+                },
+                getMonthName() {
+                    return new Date(this.currentYear, this.currentMonth).toLocaleString('default', { month: 'long' });
+                },
+                getCurrentMonthRows() {
+                    return Alpine.store('habitData').getRowsForMonth(this.currentYear, this.currentMonth);
+                },
+                saveCurrentMonthRows(rows) {
+                    Alpine.store('habitData').setRowsForMonth(this.currentYear, this.currentMonth, rows);
+                },
+                dragStart(row) {
+                    this.draggedRow = row;
+                },
+                dragOver(event) {
+                    event.preventDefault();
+                },
+                drop(targetRow) {
+                    const rows = this.getCurrentMonthRows();
+                    const draggedRowIndex = rows.findIndex(row => row.id === this.draggedRow.id);
+                    const targetRowIndex = rows.findIndex(row => row.id === targetRow.id);
+                    rows.splice(targetRowIndex, 0, rows.splice(draggedRowIndex, 1)[0]);
+                    this.saveCurrentMonthRows(rows);
+                    this.draggedRow = null;
+                },
+                saveState() {
+                    Alpine.store('habitData').save();
+                },
+            }));
+        });
+    </script>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <link rel="stylesheet" type="text/css" href="webfonts/ywft-hannah-wide.css">
+    <link rel="stylesheet" type="text/css" href="webfonts/ywft-hannah-regular.css">
+    <link rel="stylesheet" type="text/css" href="webfonts/ywft-hannah-narrow.css">
+    <link rel="stylesheet" type="text/css" href="bujo.css">
+</head>
+<body class="bg-gray-100 bujo-bg" x-data="habitTracker" x-init="init()">
+    <div class="container mx-auto p-4">
+        <div class="bg-white p-6 rounded-lg shadow-lg bujo-bg">
+            <h1 class="text-2xl font-bold mb-4 bujo-text">Habit Tracker</h1>
+            <div class="flex justify-between mb-4">
+                <div>
+                    <button class="bujo-btn" @click="addRow()">Add Row</button>
+                    <button class="bujo-btn" @click="addRow(true)">Add Category</button>
+                    <!-- Button to add Mood Category Row -->
+                    <button class="bujo-btn" @click="addRow(true, 'Mood')">Add Mood</button>
+                </div>
+                <div>
+                    <button class="bujo-btn" @click="prevMonth()">Prev</button>
+                    <span x-text="getMonthName() + ' ' + currentYear" class="font-bold bujo-text"></span>
+                    <button class="bujo-btn" @click="nextMonth()">Next</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white bujo-table">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="w-1/6 py-3 px-4 uppercase font-semibold text-sm bujo-text">Row</th>
+                            <template x-for="day in daysInMonth" :key="day">
+                                <th class="py-3 px-4 uppercase font-semibold text-sm bujo-text" x-text="day"></th>
+                            </template>
+                            <th class="py-3 px-4 uppercase font-semibold text-sm bujo-text">Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700">
+                        <template x-for="row in getCurrentMonthRows()" :key="row.id">
+                            <tr :class="{'bg-gray-200': row.isCategory}" draggable="true" @dragstart="dragStart(row)" @dragover="dragOver" @drop="drop(row)" class="draggable">
+                                <td class="w-1/6 py-3 px-4">
+                                    <input type="text" class="border-none bujo-input" x-model="row.name">
+                                </td>
+                                <template x-if="!row.isCategory">
+                                    <template x-for="day in daysInMonth" :key="day">
+                                        <td class="py-3 px-4">
+                                            <input type="checkbox" class="checkbox" :checked="isHabitChecked(row, day)" @click="toggleHabit(row, day)">
+                                        </td>
+                                    </template>
+                                </template>
+                                <template x-if="row.isCategory && row.name === 'Mood'">
+                                    <template x-for="day in daysInMonth" :key="day">
+                                        <td class="py-3 px-4">
+                                            <select class="emoji-select bujo-input" x-model="row.emoji[day]">
+                                                <option value="">Select</option>
+                                                <option value="😊">😊 Happy</option>
+                                                <option value="😢">😢 Sad</option>
+                                                <option value="😠">😠 Angry</option>
+                                                <option value="😐">😐 Neutral</option>
+                                                <!-- Add more emoji options as needed -->
+                                            </select>
+                                        </td>
+                                    </template>
+                                </template>
+                                <td class="py-3 px-4">
+                                    <button class="text-red-500" @click="removeRow(row.id)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+            <button class="bujo-btn" @click="saveState()">Save</button>
+        </div>
+    </div>
+</body>
+</html>
